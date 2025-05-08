@@ -7,6 +7,7 @@ import PostCard from "@/components/posts/PostCard";
 import { Button } from "@/components/ui/button";
 import { fetchPosts } from "@/lib/api";
 import { Post } from "@/lib/types";
+import Select from "@/components/home/Select"; // Add the correct import for the Select component
 
 const Index = () => {
   const [posts, setPosts] = useState<Post[]>([]);

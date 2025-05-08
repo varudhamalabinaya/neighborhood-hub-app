@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
   username: z.string().min(3, {
@@ -40,6 +41,7 @@ const RegisterForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -55,9 +57,17 @@ const RegisterForm = () => {
     setIsLoading(true);
     try {
       await register(data.username, data.email, data.password);
+      toast({
+        title: "Registration successful",
+        description: "Welcome to LocalLens! Your account has been created.",
+      });
       navigate("/");
-    } catch (error) {
-      // Error is handled in the AuthContext
+    } catch (error: any) {
+      toast({
+        title: "Registration failed",
+        description: error.message || "An error occurred during registration",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }

@@ -35,8 +35,8 @@ const LocationFilter = ({ onSelectLocation, selectedLocation }: LocationFilterPr
 
   return (
     <Select 
-      value={selectedLocation || ""} 
-      onValueChange={(value) => onSelectLocation(value || null)}
+      value={selectedLocation || "all"} 
+      onValueChange={(value) => onSelectLocation(value === "all" ? null : value)}
     >
       <SelectTrigger className="w-full md:w-[180px]">
         <SelectValue placeholder="Filter by location" />

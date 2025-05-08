@@ -5,109 +5,111 @@ LocalLens is a digital notice board for neighborhoods, towns, or college campuse
 
 ## Features
 
-- User authentication (login/register)
-- Create, read, update, and delete community posts
-- Filter posts by category and location
-- User profiles with badges
-- Dashboard for managing personal posts
+- User authentication (register/login)
+- Create, edit, and delete posts
+- Browse posts with category and location filters
+- User dashboard
+- Thank/react to posts
+- Responsive design with Tailwind CSS
 
 ## Tech Stack
 
-- **Frontend:**
-  - React with Hooks
-  - TypeScript
-  - Tailwind CSS
-  - shadcn/ui components
-  - React Router for navigation
-  - React Query for data fetching
+- React (with Hooks)
+- Tailwind CSS
+- Node.js + Express.js (placeholder)
+- Mock API with simulated authentication and database operations
 
-- **Backend (Setup for future implementation):**
-  - Node.js + Express.js
-  - MongoDB with Mongoose
-  - JWT Authentication
-
-## Project Setup
+## Setup Instructions
 
 ### Prerequisites
 
-- Node.js (v14+)
-- npm or yarn
+- Node.js (v16.0.0 or higher)
+- npm, yarn, or pnpm
 
 ### Installation
 
-1. Clone this repository:
-   ```
-   git clone <repo-url>
-   cd locallens
-   ```
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd locallens
+```
 
 2. Install dependencies:
-   ```
-   npm install
-   ```
+```bash
+npm install
+```
+Or if you use yarn:
+```bash
+yarn install
+```
 
 3. Start the development server:
-   ```
-   npm run dev
-   ```
-
-4. Open your browser and navigate to `http://localhost:8080`
-
-### Environment Variables
-
-For a complete backend integration, create a `.env` file in the server directory with:
-
+```bash
+npm run dev
 ```
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/locallens
-JWT_SECRET=Gz38jZx97_hsy82!Fkls73mS
-NODE_ENV=http://localhost:5000
+Or with yarn:
+```bash
+yarn dev
+```
+
+4. Open your browser and navigate to:
+```
+http://localhost:5173
 ```
 
 ## Project Structure
 
 ```
-/src
-  /components            # Reusable UI components
-    /auth               # Authentication related components
-    /home               # Home page components
-    /layout             # Layout components (header, footer)
-    /posts              # Post related components
-    /ui                 # shadcn UI components
-  /contexts             # React contexts (Auth)
-  /lib                  # Utility functions and API client
-  /pages                # Page components
-  App.tsx               # Main application component
-  index.css             # Global styles
-  main.tsx              # Entry point
+locallens/
+├── public/
+├── src/
+│   ├── components/
+│   │   ├── auth/       # Authentication components
+│   │   ├── home/       # Homepage components
+│   │   ├── layout/     # Layout components (header, footer)
+│   │   ├── posts/      # Post-related components
+│   │   └── ui/         # Reusable UI components
+│   ├── contexts/       # React contexts (auth, etc.)
+│   ├── hooks/          # Custom React hooks
+│   ├── lib/            # Utilities, API functions, types
+│   ├── pages/          # Page components
+│   ├── App.tsx         # App component with routes
+│   └── main.tsx        # Entry point
+└── server.js           # Placeholder for server implementation
 ```
 
-## Mock Authentication
+## Using VS Code
 
-For the frontend demo, use these credentials:
+This project is set up to work seamlessly with Visual Studio Code. Here are some recommended extensions:
 
-- Email: `john@example.com`
-- Password: `password`
+- ESLint
+- Prettier
+- Tailwind CSS IntelliSense
+- ES7+ React/Redux/React-Native snippets
 
-Or
+## Backend Development
 
-- Email: `jane@example.com`
-- Password: `password`
+Currently, the app uses mock API functions in `src/lib/api.ts`. To implement a real backend:
 
-## Development Notes
+1. Set up a MongoDB database
+2. Implement the Express.js API in `server.js`
+3. Create proper models for users, posts, etc.
+4. Update the API client in `src/lib/api.ts` to use real endpoints
 
-- The current implementation uses mock API functions in `src/lib/api.ts`
-- To connect to a real backend, replace the mock functions with actual API calls
-- The project is set up for a future MongoDB/Express backend
+## Environment Variables
+
+Create a `.env` file in the server directory with:
+
+```
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/locallens
+JWT_SECRET=Gz38jZx97_hsy82!Fkls73mS 
+NODE_ENV=development
+```
 
 ## Future Enhancements
 
-- Comments system for posts
-- Real-time notifications
-- Direct messaging between users
-- Post attachments (images, files)
-- Advanced search and filtering
-
-## License
-
-This project is licensed under the MIT License.
+- Implement real backend with MongoDB
+- Add social features (comments, user profiles)
+- Add image upload capability
+- Add real-time notifications

@@ -54,21 +54,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading: false,
         error: null,
       });
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${user.username}!`,
-      });
     } catch (error) {
       setAuthState(prev => ({
         ...prev,
         loading: false,
         error: error instanceof Error ? error.message : 'Failed to login',
       }));
-      toast({
-        title: "Login failed",
-        description: error instanceof Error ? error.message : 'Failed to login',
-        variant: "destructive",
-      });
+      throw error; // Propagate error to the component for handling
     }
   };
 
@@ -82,21 +74,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading: false,
         error: null,
       });
-      toast({
-        title: "Registration successful",
-        description: `Welcome to LocalLens, ${username}!`,
-      });
     } catch (error) {
       setAuthState(prev => ({
         ...prev,
         loading: false,
         error: error instanceof Error ? error.message : 'Failed to register',
       }));
-      toast({
-        title: "Registration failed",
-        description: error instanceof Error ? error.message : 'Failed to register',
-        variant: "destructive",
-      });
+      throw error; // Propagate error to the component for handling
     }
   };
 
@@ -120,6 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading: false,
         error: error instanceof Error ? error.message : 'Failed to logout',
       }));
+      throw error;
     }
   };
 

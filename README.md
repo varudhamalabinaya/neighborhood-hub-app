@@ -1,73 +1,113 @@
-# Welcome to your Lovable project
 
-## Project info
+# LocalLens - Community Notice Board Web App
 
-**URL**: https://lovable.dev/projects/715ae733-ce1b-4778-872e-e37a1ff23c96
+LocalLens is a digital notice board for neighborhoods, towns, or college campuses. Users can post updates, find services, and connect with locals.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- User authentication (login/register)
+- Create, read, update, and delete community posts
+- Filter posts by category and location
+- User profiles with badges
+- Dashboard for managing personal posts
 
-**Use Lovable**
+## Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/715ae733-ce1b-4778-872e-e37a1ff23c96) and start prompting.
+- **Frontend:**
+  - React with Hooks
+  - TypeScript
+  - Tailwind CSS
+  - shadcn/ui components
+  - React Router for navigation
+  - React Query for data fetching
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Backend (Setup for future implementation):**
+  - Node.js + Express.js
+  - MongoDB with Mongoose
+  - JWT Authentication
 
-**Use your preferred IDE**
+## Project Setup
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Prerequisites
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- Node.js (v14+)
+- npm or yarn
 
-Follow these steps:
+### Installation
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+1. Clone this repository:
+   ```
+   git clone <repo-url>
+   cd locallens
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+2. Install dependencies:
+   ```
+   npm install
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+3. Start the development server:
+   ```
+   npm run dev
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+4. Open your browser and navigate to `http://localhost:8080`
+
+### Environment Variables
+
+For a complete backend integration, create a `.env` file in the server directory with:
+
+```
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/locallens
+JWT_SECRET=Gz38jZx97_hsy82!Fkls73mS
+NODE_ENV=http://localhost:5000
 ```
 
-**Edit a file directly in GitHub**
+## Project Structure
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+/src
+  /components            # Reusable UI components
+    /auth               # Authentication related components
+    /home               # Home page components
+    /layout             # Layout components (header, footer)
+    /posts              # Post related components
+    /ui                 # shadcn UI components
+  /contexts             # React contexts (Auth)
+  /lib                  # Utility functions and API client
+  /pages                # Page components
+  App.tsx               # Main application component
+  index.css             # Global styles
+  main.tsx              # Entry point
+```
 
-**Use GitHub Codespaces**
+## Mock Authentication
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+For the frontend demo, use these credentials:
 
-## What technologies are used for this project?
+- Email: `john@example.com`
+- Password: `password`
 
-This project is built with:
+Or
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- Email: `jane@example.com`
+- Password: `password`
 
-## How can I deploy this project?
+## Development Notes
 
-Simply open [Lovable](https://lovable.dev/projects/715ae733-ce1b-4778-872e-e37a1ff23c96) and click on Share -> Publish.
+- The current implementation uses mock API functions in `src/lib/api.ts`
+- To connect to a real backend, replace the mock functions with actual API calls
+- The project is set up for a future MongoDB/Express backend
 
-## Can I connect a custom domain to my Lovable project?
+## Future Enhancements
 
-Yes, you can!
+- Comments system for posts
+- Real-time notifications
+- Direct messaging between users
+- Post attachments (images, files)
+- Advanced search and filtering
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## License
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+This project is licensed under the MIT License.

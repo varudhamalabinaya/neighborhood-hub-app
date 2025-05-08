@@ -1,17 +1,29 @@
 
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Heart, MessageSquare } from "lucide-react";
+import { ArrowLeft, Heart, MessageSquare, Edit, Trash2 } from "lucide-react";
 import { Post } from "@/lib/types";
-import { fetchPostById, thankPost } from "@/lib/api";
+import { fetchPostById, thankPost, deletePost } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const PostDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,7 +31,12 @@ const PostDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [thanking, setThanking] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const isAuthor = user && post && user.id === post.userId;
 
   useEffect(() => {
     const loadPost = async () => {
@@ -61,6 +78,32 @@ const PostDetail = () => {
       });
     } finally {
       setThanking(false);
+    }
+  };
+
+  const handleDeletePost = async () => {
+    if (!post || !id || isDeleting) return;
+    
+    setIsDeleting(true);
+    try {
+      const success = await deletePost(id);
+      if (success) {
+        toast({
+          title: "Success",
+          description: "Post deleted successfully",
+        });
+        navigate("/dashboard");
+      } else {
+        throw new Error("Failed to delete post");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete post",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -145,6 +188,48 @@ const PostDetail = () => {
                   <span>{post.comments} {post.comments === 1 ? "Comment" : "Comments"}</span>
                 </div>
               </div>
+
+              {isAuthor && (
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="gap-2"
+                    asChild
+                  >
+                    <Link to={`/edit-post/${post.id}`}>
+                      <Edit className="h-4 w-4" />
+                      <span>Edit</span>
+                    </Link>
+                  </Button>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" className="gap-2">
+                        <Trash2 className="h-4 w-4" />
+                        <span>Delete</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete your post.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={handleDeletePost}
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? "Deleting..." : "Delete"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

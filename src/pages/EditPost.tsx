@@ -1,10 +1,27 @@
 
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import Layout from "@/components/layout/Layout";
 import EditPostForm from "@/components/posts/EditPostForm";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/components/ui/use-toast";
 
 const EditPost = () => {
   const { id } = useParams<{ id: string }>();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Unauthorized",
+        description: "Please login to edit posts",
+        variant: "destructive",
+      });
+      navigate("/login");
+    }
+  }, [isAuthenticated, navigate, toast]);
   
   if (!id) {
     return (

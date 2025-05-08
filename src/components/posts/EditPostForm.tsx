@@ -62,6 +62,8 @@ const EditPostForm = ({ postId }: EditPostFormProps) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [locations, setLocations] = useState<string[]>([]);
   const [post, setPost] = useState<Post | null>(null);
+  const [notFoundError, setNotFoundError] = useState<boolean>(false);
+  const [unauthorizedError, setUnauthorizedError] = useState<boolean>(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -81,10 +83,12 @@ const EditPostForm = ({ postId }: EditPostFormProps) => {
         variant: "destructive",
       });
       navigate("/login");
+      return;
     }
-  }, [isAuthenticated, navigate, toast]);
+    
+    // If we already know there's an error, avoid fetching data again
+    if (notFoundError || unauthorizedError) return;
 
-  useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
@@ -95,6 +99,7 @@ const EditPostForm = ({ postId }: EditPostFormProps) => {
         ]);
         
         if (!postData) {
+          setNotFoundError(true);
           toast({
             title: "Error",
             description: "Post not found",
@@ -106,6 +111,7 @@ const EditPostForm = ({ postId }: EditPostFormProps) => {
 
         // Check if user is authorized to edit this post
         if (user && postData.userId !== user.id) {
+          setUnauthorizedError(true);
           toast({
             title: "Unauthorized",
             description: "You can only edit your own posts",
@@ -127,6 +133,7 @@ const EditPostForm = ({ postId }: EditPostFormProps) => {
           location: postData.location,
         });
       } catch (error) {
+        console.error("Failed to load post data:", error);
         toast({
           title: "Error",
           description: "Failed to load post data",
@@ -138,7 +145,7 @@ const EditPostForm = ({ postId }: EditPostFormProps) => {
     };
 
     loadData();
-  }, [postId, user, form, navigate, toast]);
+  }, [postId, user, form, navigate, toast, isAuthenticated, notFoundError, unauthorizedError]);
 
   const onSubmit = async (data: FormData) => {
     if (!user || !post) return;
@@ -152,13 +159,18 @@ const EditPostForm = ({ postId }: EditPostFormProps) => {
         location: data.location,
       });
       
-      toast({
-        title: "Success",
-        description: "Your post has been updated!",
-      });
-      
-      navigate(`/post/${postId}`);
+      if (updatedPost) {
+        toast({
+          title: "Success",
+          description: "Your post has been updated!",
+        });
+        
+        navigate(`/post/${postId}`);
+      } else {
+        throw new Error("Failed to update post");
+      }
     } catch (error) {
+      console.error("Error updating post:", error);
       toast({
         title: "Error",
         description: "Failed to update post",
@@ -168,6 +180,42 @@ const EditPostForm = ({ postId }: EditPostFormProps) => {
       setIsLoading(false);
     }
   };
+
+  if (notFoundError) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Post Not Found</CardTitle>
+          <CardDescription>
+            The post you're trying to edit doesn't exist.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={() => navigate("/dashboard")}>
+            Return to Dashboard
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (unauthorizedError) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Unauthorized</CardTitle>
+          <CardDescription>
+            You don't have permission to edit this post.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={() => navigate("/dashboard")}>
+            Return to Dashboard
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (isLoading && !post) {
     return (
@@ -250,6 +298,7 @@ const EditPostForm = ({ postId }: EditPostFormProps) => {
                     <Select 
                       onValueChange={field.onChange} 
                       value={field.value}
+                      defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
@@ -278,6 +327,7 @@ const EditPostForm = ({ postId }: EditPostFormProps) => {
                     <Select 
                       onValueChange={field.onChange} 
                       value={field.value}
+                      defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>

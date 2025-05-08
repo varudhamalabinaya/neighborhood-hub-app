@@ -42,7 +42,7 @@ const LocationFilter = ({ onSelectLocation, selectedLocation }: LocationFilterPr
         <SelectValue placeholder="Filter by location" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="">All Locations</SelectItem>
+        <SelectItem value="all">All Locations</SelectItem>
         {!loading &&
           locations.map((location) => (
             <SelectItem key={location} value={location}>

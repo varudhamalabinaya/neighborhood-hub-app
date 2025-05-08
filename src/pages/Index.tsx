@@ -22,7 +22,7 @@ const Index = () => {
       try {
         const filters = {
           ...(selectedCategory && { category: selectedCategory }),
-          ...(selectedLocation && { location: selectedLocation }),
+          ...(selectedLocation && selectedLocation !== "all" && { location: selectedLocation }),
         };
 
         const data = await fetchPosts(filters);

@@ -1,4 +1,3 @@
-
 // This is a mock API client that would be replaced with actual API calls
 import { User, Post, Category } from './types';
 
@@ -10,7 +9,7 @@ const users: User[] = [
     email: 'john@example.com',
     createdAt: '2023-01-15',
     avatar: 'https://i.pravatar.cc/150?u=johndoe',
-    location: 'Downtown',
+    location: 'Coimbatore',
     badges: ['Active User', 'Verified']
   },
   {
@@ -19,7 +18,7 @@ const users: User[] = [
     email: 'jane@example.com',
     createdAt: '2023-02-10',
     avatar: 'https://i.pravatar.cc/150?u=janedoe',
-    location: 'Uptown',
+    location: 'Erode',
     badges: ['Verified']
   }
 ];
@@ -30,7 +29,7 @@ const posts: Post[] = [
     title: 'Community Cleanup This Weekend',
     content: 'Join us for a community cleanup event this Saturday at 10 AM in Central Park. Bring gloves and bags if possible!',
     category: 'Events',
-    location: 'Downtown',
+    location: 'Coimbatore',
     date: '2023-05-10T14:30:00Z',
     userId: '1',
     author: {
@@ -46,7 +45,7 @@ const posts: Post[] = [
     title: 'Lost Cat - Orange Tabby',
     content: 'My orange tabby cat, Whiskers, went missing yesterday near Oak Street. Please contact me if you see him.',
     category: 'Lost & Found',
-    location: 'Westside',
+    location: 'Erode',
     date: '2023-05-12T09:15:00Z',
     userId: '2',
     author: {
@@ -62,7 +61,7 @@ const posts: Post[] = [
     title: 'Free Piano Lessons for Kids',
     content: 'I am offering free piano lessons for children ages 7-12 every Sunday afternoon. Limited spots available!',
     category: 'Services',
-    location: 'Downtown',
+    location: 'Tiruppur',
     date: '2023-05-11T16:45:00Z',
     userId: '1',
     author: {
@@ -78,7 +77,7 @@ const posts: Post[] = [
     title: 'New Coffee Shop Opening',
     content: 'Just wanted to let everyone know that a new coffee shop called "Bean There" is opening next week on Main Street.',
     category: 'News',
-    location: 'Uptown',
+    location: 'Salem',
     date: '2023-05-09T11:20:00Z',
     userId: '2',
     author: {
@@ -278,7 +277,8 @@ export async function fetchCategories(): Promise<Category[]> {
 export async function fetchLocations(): Promise<string[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      const locations = [...new Set(posts.map(post => post.location))];
+      // Instead of dynamically generating from posts, use a fixed list
+      const locations = ['Erode', 'Coimbatore', 'Tiruppur', 'Salem'];
       resolve(locations);
     }, 300);
   });

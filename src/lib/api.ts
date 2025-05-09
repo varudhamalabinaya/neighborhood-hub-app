@@ -1,4 +1,3 @@
-
 // API client for communicating with MongoDB backend
 import { User, Post, Category } from './types';
 import axios from 'axios';
@@ -292,6 +291,7 @@ export async function createPost(postData: Omit<Post, 'id' | 'author' | 'date' |
       console.warn('Using mock post creation as fallback');
       const user = JSON.parse(localStorage.getItem('user') || '{}');
       
+      // Fix the type issue by ensuring avatar is always provided, even if it's a default value
       const newPost: Post = {
         id: (mockPosts.length + 1).toString(),
         title: postData.title,
@@ -302,7 +302,7 @@ export async function createPost(postData: Omit<Post, 'id' | 'author' | 'date' |
         userId: user.id || '1',
         author: {
           username: user.username || 'Anonymous',
-          avatar: user.avatar
+          avatar: user.avatar || 'https://source.unsplash.com/random/100x100/?person' // Default avatar if none provided
         },
         thankCount: 0,
         comments: 0,
@@ -350,6 +350,15 @@ export async function updatePost(id: string, updateData: Partial<Post>): Promise
       console.warn('Using mock post update as fallback');
       const index = mockPosts.findIndex(post => post.id === id);
       if (index !== -1) {
+        // Ensure avatar is always provided in author
+        if (updateData.author && updateData.author.avatar === undefined) {
+          if (mockPosts[index].author.avatar) {
+            updateData.author.avatar = mockPosts[index].author.avatar;
+          } else {
+            updateData.author.avatar = 'https://source.unsplash.com/random/100x100/?person';
+          }
+        }
+        
         mockPosts[index] = { ...mockPosts[index], ...updateData };
         return mockPosts[index];
       }

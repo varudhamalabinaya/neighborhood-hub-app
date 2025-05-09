@@ -20,7 +20,7 @@ export interface Post {
   userId: string;
   author: {
     username: string;
-    avatar?: string;
+    avatar: string; // Changed from optional to required to fix type errors
   };
   thankCount: number;
   comments: number;

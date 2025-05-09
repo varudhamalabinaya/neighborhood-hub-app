@@ -279,7 +279,7 @@ export async function fetchPostById(id: string): Promise<Post | null> {
   }
 }
 
-export async function createPost(postData: Omit<Post, 'id' | 'author' | 'date' | 'thankCount' | 'comments'>): Promise<Post> {
+export async function createPost(postData: Omit<Post, 'id' | 'author' | 'date' | 'thankCount' | 'comments' | 'thankedByUser'>): Promise<Post> {
   try {
     const response = await apiClient.post('/posts', postData);
     return response.data;
@@ -306,7 +306,7 @@ export async function createPost(postData: Omit<Post, 'id' | 'author' | 'date' |
         },
         thankCount: 0,
         comments: 0,
-        thankedByUser: false
+        thankedByUser: false // Explicit default value
       };
       
       mockPosts.unshift(newPost);
@@ -357,6 +357,11 @@ export async function updatePost(id: string, updateData: Partial<Post>): Promise
           } else {
             updateData.author.avatar = 'https://source.unsplash.com/random/100x100/?person';
           }
+        }
+        
+        // Ensure thankedByUser is set if it's undefined in the update data
+        if (updateData.thankedByUser === undefined) {
+          updateData.thankedByUser = mockPosts[index].thankedByUser;
         }
         
         mockPosts[index] = { ...mockPosts[index], ...updateData };

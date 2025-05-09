@@ -24,7 +24,7 @@ export interface Post {
   };
   thankCount: number;
   comments: number;
-  thankedByUser?: boolean;
+  thankedByUser: boolean; // Changed from optional to required
 }
 
 export interface Category {

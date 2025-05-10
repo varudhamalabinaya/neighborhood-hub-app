@@ -3,6 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 // Load environment variables
 dotenv.config();
@@ -10,19 +12,29 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: '*', // Allow all origins in development
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'x-auth-token']
+}));
 app.use(express.json());
 
 // MongoDB Connection String
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://bharanidharanabinaya:49gwbSUzNS2TaS88@locallens.8fpyu0h.mongodb.net/locallens";
+const MONGODB_URI = process.env.MONGODB_URI;
+const JWT_SECRET = process.env.JWT_SECRET || "Gz38j2x97_hsy821fklS73mS";
 
-// Connect to MongoDB
+// Connect to MongoDB with proper options
 const connectDB = async () => {
   try {
-    await mongoose.connect(MONGODB_URI);
-    console.log('MongoDB Connected...');
+    await mongoose.connect(MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    console.log('MongoDB Connected Successfully...');
   } catch (err) {
     console.error('MongoDB connection error:', err.message);
+    // Make connection errors more visible
+    console.error('Please check your MongoDB connection string and network');
     process.exit(1);
   }
 };
@@ -114,10 +126,32 @@ const CategorySchema = new mongoose.Schema({
 
 const Category = mongoose.model('Category', CategorySchema);
 
+// Middleware to validate JWT token
+const auth = async (req, res, next) => {
+  // Get token from header
+  const token = req.header('x-auth-token');
+
+  // Check if no token
+  if (!token) {
+    return res.status(401).json({ msg: 'No token, authorization denied' });
+  }
+
+  try {
+    // Verify token
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    console.error('Token verification failed:', err.message);
+    res.status(401).json({ msg: 'Token is not valid' });
+  }
+};
+
 // Define routes
 // Auth Routes
 app.post('/api/auth/register', async (req, res) => {
   try {
+    console.log('Register request received:', req.body);
     const { username, email, password } = req.body;
 
     // Check if user exists
@@ -126,39 +160,56 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ msg: 'User already exists' });
     }
 
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
     // Create new user
     user = new User({
       username,
       email,
-      password, // In production, hash this password with bcrypt
+      password: hashedPassword, // Store hashed password
       avatar: `https://source.unsplash.com/random/100x100/?person&${Date.now()}`
     });
 
     await user.save();
+    console.log('User saved to database:', user.username);
 
-    // Create a simple token (in production, use JWT)
-    const token = user._id.toString();
+    // Create JWT token
+    const payload = {
+      id: user._id
+    };
 
-    res.json({
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        createdAt: user.createdAt,
-        avatar: user.avatar,
-        badges: user.badges || [],
-        location: user.location
+    jwt.sign(
+      payload,
+      JWT_SECRET,
+      { expiresIn: '24h' },
+      (err, token) => {
+        if (err) throw err;
+        
+        res.json({
+          token,
+          user: {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            createdAt: user.createdAt,
+            avatar: user.avatar,
+            badges: user.badges || [],
+            location: user.location
+          }
+        });
       }
-    });
+    );
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Registration error:', err.message);
+    res.status(500).send('Server error during registration');
   }
 });
 
 app.post('/api/auth/login', async (req, res) => {
   try {
+    console.log('Login request received:', req.body);
     const { email, password } = req.body;
 
     // Find user
@@ -167,44 +218,50 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ msg: 'Invalid credentials' });
     }
 
-    // Verify password (in production, compare hashed passwords)
-    if (password !== user.password) {
+    // Verify password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
       return res.status(400).json({ msg: 'Invalid credentials' });
     }
 
     // Create token
-    const token = user._id.toString();
+    const payload = {
+      id: user._id
+    };
 
-    res.json({
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        createdAt: user.createdAt,
-        avatar: user.avatar,
-        badges: user.badges || [],
-        location: user.location
+    jwt.sign(
+      payload,
+      JWT_SECRET,
+      { expiresIn: '24h' },
+      (err, token) => {
+        if (err) throw err;
+        
+        console.log('User logged in successfully:', user.username);
+        res.json({
+          token,
+          user: {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            createdAt: user.createdAt,
+            avatar: user.avatar,
+            badges: user.badges || [],
+            location: user.location
+          }
+        });
       }
-    });
+    );
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Login error:', err.message);
+    res.status(500).send('Server error during login');
   }
 });
 
-app.get('/api/auth/user', async (req, res) => {
+app.get('/api/auth/user', auth, async (req, res) => {
   try {
-    // Get token from header
-    const token = req.header('x-auth-token');
-    if (!token) {
-      return res.status(401).json({ msg: 'No token, authorization denied' });
-    }
-
-    // Verify token (in production, verify JWT)
-    const user = await User.findById(token).select('-password');
+    const user = await User.findById(req.user.id).select('-password');
     if (!user) {
-      return res.status(401).json({ msg: 'Token is not valid' });
+      return res.status(404).json({ msg: 'User not found' });
     }
 
     res.json({
@@ -217,8 +274,8 @@ app.get('/api/auth/user', async (req, res) => {
       location: user.location
     });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Get user error:', err.message);
+    res.status(500).send('Server error while getting user');
   }
 });
 
@@ -256,21 +313,16 @@ app.get('/api/posts', async (req, res) => {
 
     res.json(postsWithAuthor);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Error fetching posts:', err.message);
+    res.status(500).send('Server error while getting posts');
   }
 });
 
-app.post('/api/posts', async (req, res) => {
+app.post('/api/posts', auth, async (req, res) => {
   try {
-    const token = req.header('x-auth-token');
-    if (!token) {
-      return res.status(401).json({ msg: 'No token, authorization denied' });
-    }
-
-    const user = await User.findById(token);
+    const user = await User.findById(req.user.id);
     if (!user) {
-      return res.status(401).json({ msg: 'Token is not valid' });
+      return res.status(404).json({ msg: 'User not found' });
     }
 
     const newPost = new Post({
@@ -283,6 +335,7 @@ app.post('/api/posts', async (req, res) => {
     });
     
     const post = await newPost.save();
+    console.log('New post created:', post.title);
     
     res.json({
       id: post._id,
@@ -301,8 +354,8 @@ app.post('/api/posts', async (req, res) => {
       thankedByUser: false
     });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Error creating post:', err.message);
+    res.status(500).send('Server error while creating post');
   }
 });
 
@@ -333,8 +386,8 @@ app.get('/api/categories', async (req, res) => {
       icon: cat.icon
     })));
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Error fetching categories:', err.message);
+    res.status(500).send('Server error while getting categories');
   }
 });
 
@@ -350,9 +403,62 @@ app.get('/api/locations', async (req, res) => {
     
     res.json(locations);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server error');
+    console.error('Error fetching locations:', err.message);
+    res.status(500).send('Server error while getting locations');
   }
+});
+
+// Thank/Unthank a post
+app.put('/api/posts/:id/thank', auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+    
+    if (!post) {
+      return res.status(404).json({ msg: 'Post not found' });
+    }
+    
+    // Check if already thanked
+    const thankedIndex = post.thankedBy.indexOf(req.user.id);
+    
+    if (thankedIndex === -1) {
+      // Add thank
+      post.thankedBy.push(req.user.id);
+      post.thankCount++;
+    } else {
+      // Remove thank
+      post.thankedBy.splice(thankedIndex, 1);
+      post.thankCount--;
+    }
+    
+    await post.save();
+    
+    const author = await User.findById(post.userId);
+    
+    res.json({
+      id: post._id,
+      title: post.title,
+      content: post.content,
+      category: post.category,
+      location: post.location,
+      date: post.date,
+      userId: post.userId,
+      author: {
+        username: author ? author.username : 'Unknown User',
+        avatar: author ? author.avatar : 'https://source.unsplash.com/random/100x100/?person'
+      },
+      thankCount: post.thankCount,
+      comments: post.comments,
+      thankedByUser: thankedIndex === -1 // If it wasn't thanked before, it is now
+    });
+  } catch (err) {
+    console.error('Error thanking post:', err.message);
+    res.status(500).send('Server error while updating post');
+  }
+});
+
+// Root route to check if the server is running
+app.get('/', (req, res) => {
+  res.send('LocalLens API is running');
 });
 
 // Error handling middleware
@@ -364,3 +470,4 @@ app.use((err, req, res, next) => {
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+

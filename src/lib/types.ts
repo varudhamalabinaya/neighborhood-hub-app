@@ -20,11 +20,11 @@ export interface Post {
   userId: string;
   author: {
     username: string;
-    avatar: string; // Changed from optional to required to fix type errors
+    avatar: string;
   };
   thankCount: number;
   comments: number;
-  thankedByUser: boolean; // Changed from optional to required
+  thankedByUser: boolean;
 }
 
 export interface Category {
